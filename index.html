@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>新生儿NEC修正 Bell分期计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background-color: #f0faf8;
+            color: #333;
+            line-height: 1.6;
+            padding: 15px;
+            font-size: 16px;
+            min-height: 100vh;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 100, 90, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #00897b, #004d40);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.7rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .icon {
+            display: inline-block;
+            font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+            font-size: 1.3em;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .version-badge {
+            background-color: #ff7043;
+            color: white;
+            font-size: 0.78rem;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .content-wrapper {
+            padding: 20px;
+        }
+
+        /* ===== 板块一：参数选择 ===== */
+        .section-title {
+            font-size: 1.15rem;
+            color: #00695c;
+            margin-bottom: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #b2dfdb;
+        }
+
+        .input-section {
+            margin-bottom: 25px;
+            background-color: #f1f8f7;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .input-group {
+            margin-bottom: 22px;
+        }
+
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .input-label {
+            font-size: 1.05rem;
+            color: #00695c;
+            margin-bottom: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #b2dfdb;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background-color: white;
+            transition: all 0.2s;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300695c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3vpolyline points='6 9 12 15 18 9'%3e%3v/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 18px;
+            padding-right: 40px;
+        }
+
+        select:focus {
+            border-color: #00897b;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 137, 123, 0.15);
+        }
+
+        .option-desc {
+            font-size: 0.85rem;
+            color: #777;
+            margin-top: 6px;
+            margin-left: 4px;
+        }
+
+        /* ===== 板块二：分期结果 ===== */
+        .result-section {
+            margin-top: 25px;
+            background-color: #e8f5e9;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #43a047;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .stage-badge-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .stage-chip {
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            background-color: #e0e0e0;
+            color: #757575;
+            transition: all 0.3s;
+        }
+
+        .stage-chip.active {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .chip-i.active   { background-color: #c8e6c9; color: #2e7d32; }
+        .chip-ii.active  { background-color: #fff9c4; color: #f57f17; }
+        .chip-iii.active { background-color: #ffcdd2; color: #c62828; }
+
+        .stage-display {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            margin-bottom: 15px;
+        }
+
+        .stage-display-label {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .stage-display-value {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .stage-display-sub {
+            font-size: 1rem;
+            color: #555;
+            margin-top: 6px;
+        }
+
+        .stage-waiting {
+            color: #999;
+            font-size: 1.3rem;
+        }
+
+        /* 分期颜色 */
+        .st-ia { color: #2e7d32; }
+        .st-ib { color: #558b2f; }
+        .st-iia { color: #f9a825; }
+        .st-iib { color: #ef6c00; }
+        .st-iiia { color: #c62828; }
+        .st-iiib { color: #b71c1c; }
+
+        /* ===== 板块三：治疗建议 ===== */
+        .treat-section {
+            margin-top: 20px;
+            background-color: #fff8e1;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #ffb300;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .treat-title {
+            font-size: 1.15rem;
+            color: #e65100;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .treat-content {
+            background-color: white;
+            border-radius: 8px;
+            padding: 18px;
+            min-height: 60px;
+        }
+
+        .treat-content ul {
+            padding-left: 20px;
+        }
+
+        .treat-content li {
+            margin-bottom: 8px;
+            font-size: 0.98rem;
+            line-height: 1.6;
+        }
+
+        .treat-placeholder {
+            color: #999;
+            text-align: center;
+            padding: 20px 0;
+            font-size: 0.95rem;
+        }
+
+        /* 按钮 */
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+        }
+
+        .reset-btn {
+            background-color: #eceff1;
+            color: #455a64;
+        }
+        .reset-btn:active { background-color: #cfd8dc; }
+
+        .info-btn {
+            background-color: #00897b;
+            color: white;
+        }
+        .info-btn:active { background-color: #00695c; }
+
+        /* 注意事项 */
+        .note-box {
+            background-color: #fff3e0;
+            border-radius: 8px;
+            padding: 18px;
+            margin-top: 25px;
+            border-left: 4px solid #ff9800;
+            font-size: 0.9rem;
+        }
+
+        .note-title {
+            font-size: 1.05rem;
+            color: #e65100;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .note-box ul { padding-left: 20px; }
+        .note-box li { margin-bottom: 6px; }
+
+        footer {
+            text-align: center;
+            padding: 18px;
+            color: #888;
+            font-size: 0.82rem;
+            border-top: 1px solid #e0f2f1;
+            background-color: #f1f8f7;
+            margin-top: 20px;
+            line-height: 1.5;
+        }
+
+        /* ===== 移动端适配 ===== */
+        @media (max-width: 768px) {
+            body { padding: 10px; font-size: 15px; }
+            header { padding: 16px; }
+            header h1 { font-size: 1.35rem; }
+            .content-wrapper { padding: 15px; }
+            .stage-display-value { font-size: 1.7rem; }
+            .buttons { flex-direction: column; }
+            select { font-size: 16px; } /* 防止 iOS 缩放 */
+
+            /* 对照表：手机端保持表格，压缩字号间距，一屏看完 */
+            .modal-content {
+                width: 98%;
+                max-width: 100%;
+                padding: 8px !important;
+                max-height: 97vh;
+            }
+            .modal-title { font-size: 0.95rem !important; }
+            .modal-header { margin-bottom: 4px !important; }
+            .close-btn { width: 30px; height: 30px; font-size: 1.4rem; }
+
+            .ref-table {
+                margin-top: 2px;
+                font-size: 0.62rem;
+                table-layout: fixed;
+            }
+            .ref-table th {
+                padding: 3px 2px;
+                font-size: 0.65rem;
+                line-height: 1.2;
+            }
+            .ref-table td {
+                padding: 2px 2px;
+                line-height: 1.25;
+                word-break: break-all;
+            }
+            .ref-table .stage-cell {
+                white-space: normal;
+                font-size: 0.65rem;
+            }
+        }
+
+        /* ===== 模态框 ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            width: 92%;
+            max-width: 600px;
+            border-radius: 12px;
+            padding: 22px;
+            max-height: 85vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            color: #00695c;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: #666;
+            cursor: pointer;
+            width: 38px; height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .close-btn:active { background-color: #f0f0f0; }
+
+        .ref-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.82rem;
+        }
+
+        .ref-table th {
+            background-color: #00695c;
+            color: white;
+            padding: 8px 6px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .ref-table td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #e0f2f1;
+            vertical-align: top;
+            line-height: 1.45;
+        }
+
+        .ref-table tr:nth-child(even) { background-color: #f1f8f7; }
+        .ref-table .stage-cell { font-weight: 600; white-space: nowrap; width: 18%; }
+        .ref-table .stage-note { font-size: 0.85em; font-weight: 400; color: #555; line-height: 1.2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span class="icon">🍼</span> 新生儿NEC修正 Bell分期计算器 <span class="version-badge">新生儿专用</span></h1>
+            <p>坏死性小肠结肠炎（NEC）修正 Bell分期诊断与治疗参考</p>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- ========== 板块一：参数选择 ========== -->
+            <div class="input-section">
+                <div class="section-title"><span class="icon">📋</span> 第一步：选择临床表现</div>
+
+                <div class="input-group">
+                    <div class="input-label"><span class="icon">🌡️</span> 全身症状</div>
+                    <select id="systemic">
+                        <option value="">— 请选择全身症状 —</option>
+                        <option value="1">体温不稳定、呼吸暂停、心动过缓、嗜睡</option>
+                        <option value="4">上述表现 + 轻度代谢性酸中毒、轻度血小板减少</option>
+                        <option value="5">上述表现 + 低血压、严重呼吸暂停、混合性酸中毒、DIC、中性粒细胞减少、无尿</option>
+                        <option value="6">上述表现 + 病情突然恶化</option>
+                    </select>
+                    <div class="option-desc">按最重表现选择，"同前"类表现已合并为递进选项</div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label"><span class="icon">🤢</span> 胃肠道症状</div>
+                    <select id="gi">
+                        <option value="">— 请选择胃肠道症状 —</option>
+                        <option value="1">胃潴留、腹胀、呕吐、便隐血阳性</option>
+                        <option value="2">肉眼血便</option>
+                        <option value="3">上述表现 + 肠鸣音消失、腹部触痛</option>
+                        <option value="4">上述表现 + 腹部触痛明显、腹壁蜂窝织炎或右下腹包块</option>
+                        <option value="5">上述表现 + 弥漫性腹膜炎、腹膨隆、触痛明显、腹壁红肿</option>
+                        <option value="6">上述表现 + 腹胀突然加重</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label"><span class="icon">🩻</span> 影像学检查</div>
+                    <select id="imaging">
+                        <option value="">— 请选择影像学表现 —</option>
+                        <option value="1">正常或轻度肠管扩张</option>
+                        <option value="3">肠管扩张、梗阻、肠壁积气</option>
+                        <option value="4">上述表现 + 门静脉积气 ± 腹水</option>
+                        <option value="6">上述表现 + 气腹</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ========== 板块二：分期结果 ========== -->
+            <div class="result-section">
+                <div class="section-title" style="color:#2e7d32;border-bottom-color:#a5d6a7;">
+                    <span class="icon">📊</span> 第二步：分期结果
+                </div>
+
+                <div class="stage-badge-row">
+                    <div class="stage-chip chip-i" data-stage="i">Ⅰ期 疑诊</div>
+                    <div class="stage-chip chip-ii" data-stage="ii">Ⅱ期 确诊</div>
+                    <div class="stage-chip chip-iii" data-stage="iii">Ⅲ期 进展</div>
+                </div>
+
+                <div class="stage-display">
+                    <div class="stage-display-label">当前匹配分期</div>
+                    <div class="stage-display-value stage-waiting" id="stageValue">— 待选择 —</div>
+                    <div class="stage-display-sub" id="stageSub"></div>
+                </div>
+            </div>
+
+            <!-- ========== 板块三：治疗建议 ========== -->
+            <div class="treat-section">
+                <div class="treat-title"><span class="icon">💊</span> 第三步：治疗建议</div>
+                <div class="treat-content" id="treatContent">
+                    <div class="treat-placeholder">选择任意一项临床表现后，此处将自动显示对应分期的治疗方案</div>
+                </div>
+            </div>
+
+            <!-- 按钮 -->
+            <div class="buttons">
+                <button class="reset-btn" id="resetBtn"><span class="icon">🔄</span> 重置</button>
+                <button class="info-btn" id="infoBtn"><span class="icon">📚</span> Bell分期对照表</button>
+            </div>
+
+            <!-- 注意事项 -->
+            <div class="note-box">
+                <div class="note-title"><span class="icon">⚠️</span> 使用说明与注意事项</div>
+                <ul>
+                    <li>本工具依据修正 Bell（Modified Bell）分期标准，取全身、胃肠道、影像学三项中<strong>最严重</strong>的表现确定分期。</li>
+                    <li>Ⅰ期分IA（疑似，无肉眼血便）与IB（疑似，伴肉眼血便）。</li>
+                    <li>Ⅱ期分ⅡA（轻度，无中毒表现）与ⅡB（中度，伴酸中毒/血小板减少）。</li>
+                    <li>Ⅲ期分ⅢA（重度，肠壁完整、无气腹）与ⅢB（重度，肠穿孔、气腹）。</li>
+                    <li>本工具仅供临床参考，实际诊疗须结合患儿整体情况及上级医师判断。</li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            <p>新生儿坏死性小肠结肠炎（NEC）修正 Bell分期计算器</p>
+            <p>© 2026 新生儿临床工具 | 仅供医疗专业人员参考使用</p>
+        </footer>
+    </div>
+
+    <!-- 模态框：完整Bell分期对照表 -->
+    <div class="modal-overlay" id="infoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title"><span class="icon">📚</span> 修正 Bell分期完整对照表</h2>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <table class="ref-table">
+                <thead>
+                    <tr>
+                        <th>分期</th>
+                        <th>全身症状</th>
+                        <th>胃肠道症状</th>
+                        <th>影像学</th>
+                        <th>治疗</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="stage-cell">ⅠA<br><span class="stage-note">疑似</span></td>
+                        <td>体温不稳定，呼吸暂停，心动过缓，嗜睡</td>
+                        <td>胃潴留，腹胀，呕吐，便隐血阳性</td>
+                        <td>正常或轻度肠管扩张</td>
+                        <td>绝对禁食，胃肠减压，抗生素3天</td>
+                    </tr>
+                    <tr>
+                        <td class="stage-cell">ⅠB<br><span class="stage-note">疑似</span></td>
+                        <td>同ⅠA</td>
+                        <td>肉眼血便</td>
+                        <td>同ⅠA</td>
+                        <td>同ⅠA</td>
+                    </tr>
+                    <tr>
+                        <td class="stage-cell">ⅡA<br><span class="stage-note">确诊·轻度</span></td>
+                        <td>同ⅠA</td>
+                        <td>同ⅠA/ⅠB，肠鸣音消失，腹部触痛</td>
+                        <td>肠管扩张、梗阻、肠壁积气</td>
+                        <td>同ⅠA，抗生素7～10天</td>
+                    </tr>
+                    <tr>
+                        <td class="stage-cell">ⅡB<br><span class="stage-note">确诊·中度</span></td>
+                        <td>同ⅡA，轻度代谢性酸中毒，轻度血小板减少</td>
+                        <td>同ⅡA，肠鸣音消失、腹部触痛明显，±腹壁蜂窝织炎或右下腹包块</td>
+                        <td>同ⅡA，门静脉积气±腹水</td>
+                        <td>同ⅡA，补充血容量，纠正酸中毒，抗生素14天</td>
+                    </tr>
+                    <tr>
+                        <td class="stage-cell">ⅢA<br><span class="stage-note">进展·重度<br>肠壁完整</span></td>
+                        <td>同ⅡB，低血压、心动过缓、严重呼吸暂停、混合性酸中毒、DIC、中性粒细胞减少、无尿</td>
+                        <td>同ⅡB，弥漫性腹膜炎、腹膨隆、触痛明显、腹壁红肿</td>
+                        <td>同ⅡB，腹水</td>
+                        <td>同ⅡB，液体复苏、血管活性药、机械通气、腹腔穿刺</td>
+                    </tr>
+                    <tr>
+                        <td class="stage-cell">ⅢB<br><span class="stage-note">进展·重度<br>肠穿孔</span></td>
+                        <td>同ⅢA，病情突然恶化</td>
+                        <td>同ⅢA，腹胀突然加重</td>
+                        <td>同ⅡB，气腹</td>
+                        <td>同ⅢA，手术</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const systemicEl   = document.getElementById('systemic');
+        const giEl         = document.getElementById('gi');
+        const imagingEl   = document.getElementById('imaging');
+        const stageValueEl = document.getElementById('stageValue');
+        const stageSubEl   = document.getElementById('stageSub');
+        const treatEl      = document.getElementById('treatContent');
+        const resetBtn     = document.getElementById('resetBtn');
+        const infoBtn      = document.getElementById('infoBtn');
+        const infoModal    = document.getElementById('infoModal');
+        const closeModalBtn= document.getElementById('closeModalBtn');
+        const chips        = document.querySelectorAll('.stage-chip');
+
+        // 分期定义表：等级 1~6
+        const STAGES = {
+            1: { code: 'ⅠA', name: '疑似NEC（IA期）', cls: 'st-ia', tier: 'i',
+                 sub: '疑诊期 · 无肉眼血便',
+                 treat: ['绝对禁食','胃肠减压','抗生素治疗 3 天'] },
+            2: { code: 'ⅠB', name: '疑似NEC（IB期）', cls: 'st-ib', tier: 'i',
+                 sub: '疑诊期 · 伴肉眼血便',
+                 treat: ['绝对禁食','胃肠减压','抗生素治疗 3 天'] },
+            3: { code: 'ⅡA', name: '确诊NEC · 轻度（IIA期）', cls: 'st-iia', tier: 'ii',
+                 sub: '确诊期 · 无全身中毒表现',
+                 treat: ['继续禁食、胃肠减压','抗生素治疗 7～10 天','密切监测腹部体征及生命体征'] },
+            4: { code: 'ⅡB', name: '确诊NEC · 中度（IIB期）', cls: 'st-iib', tier: 'ii',
+                 sub: '确诊期 · 伴代谢性酸中毒、血小板减少',
+                 treat: ['同 IIA 处理','补充血容量','纠正代谢性酸中毒','抗生素治疗 14 天','必要时复查腹部立位片'] },
+            5: { code: 'ⅢA', name: '进展NEC · 重度（IIIA期）', cls: 'st-iiia', tier: 'iii',
+                 sub: '进展期 · 肠壁完整、无气腹',
+                 treat: ['同 IIB 处理','液体复苏','应用血管活性药物维持循环','机械通气支持呼吸','腹腔穿刺评估/引流','请外科会诊，密切监测是否需手术'] },
+            6: { code: 'ⅢB', name: '进展NEC · 重度（IIIB期）', cls: 'st-iiib', tier: 'iii',
+                 sub: '进展期 · 肠穿孔、气腹',
+                 treat: ['同 IIIA 内科复苏处理','急诊外科手术治疗（腹腔引流或剖腹探查）','术后禁食、静脉营养及抗感染支持治疗'] }
+        };
+
+        function updateStage() {
+            const s = parseInt(systemicEl.value) || 0;
+            const g = parseInt(giEl.value) || 0;
+            const i = parseInt(imagingEl.value) || 0;
+
+            if (!s && !g && !i) {
+                resetDisplay();
+                return;
+            }
+
+            const maxLevel = Math.max(s, g, i);
+            const stage = STAGES[maxLevel];
+
+            // 高亮对应阶段 chip
+            chips.forEach(c => c.classList.remove('active'));
+            const activeChip = document.querySelector('.stage-chip[data-stage="' + stage.tier + '"]');
+            if (activeChip) activeChip.classList.add('active');
+
+            // 显示分期
+            stageValueEl.textContent = stage.code;
+            stageValueEl.className = 'stage-display-value ' + stage.cls;
+            stageSubEl.textContent = stage.sub;
+
+            // 显示治疗建议
+            treatEl.innerHTML = '<ul>' + stage.treat.map(t => '<li>' + t + '</li>').join('') + '</ul>';
+        }
+
+        function resetDisplay() {
+            stageValueEl.textContent = '— 待选择 —';
+            stageValueEl.className = 'stage-display-value stage-waiting';
+            stageSubEl.textContent = '';
+            treatEl.innerHTML = '<div class="treat-placeholder">选择任意一项临床表现后，此处将自动显示对应分期的治疗方案</div>';
+            chips.forEach(c => c.classList.remove('active'));
+        }
+
+        systemicEl.addEventListener('change', updateStage);
+        giEl.addEventListener('change', updateStage);
+        imagingEl.addEventListener('change', updateStage);
+
+        resetBtn.addEventListener('click', function () {
+            systemicEl.value = '';
+            giEl.value = '';
+            imagingEl.value = '';
+            resetDisplay();
+        });
+
+        infoBtn.addEventListener('click', function () {
+            infoModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+        closeModalBtn.addEventListener('click', function () {
+            infoModal.style.display = 'none';
+            document.body.style.overflow = '';
+        });
+        infoModal.addEventListener('click', function (e) {
+            if (e.target === infoModal) {
+                infoModal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        });
+
+        // 移动端触摸反馈
+        document.querySelectorAll('button, select').forEach(el => {
+            el.addEventListener('touchstart', function () { this.style.opacity = '0.85'; });
+            el.addEventListener('touchend', function () { this.style.opacity = '1'; });
+        });
+    });
+    </script>
+</body>
+</html>
